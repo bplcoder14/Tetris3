@@ -28,6 +28,7 @@ WINDOW_HEIGHT = 1000
 win = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 pygame.display.set_caption('TETRIS')
 clock = pygame.time.Clock()
+actions = []
 
 
 def create_rectangle(width, height, color):
@@ -48,6 +49,10 @@ def create_textbox(width, height, inner_color, border_color, border_radius, bord
     text_surf = create_text(text, font, text_color)
     surf.blit(text_surf, text_surf.get_rect(center=(width / 2, height / 2)))
     return surf.convert_alpha()
+
+
+class Actions(Enum):
+    TEST = 0
 
 
 class Element(pygame.sprite.Sprite):
@@ -88,7 +93,7 @@ class Rectangle(Element):
 class Button:
 
     def __init__(self, x, y, width, height, color, border_color, hover_color, border_size, border_radius, text, font,
-                 text_color, *groups):
+                 text_color, action, *groups):
         self.x = x
         self.y = y
         self.image = create_textbox(width, height, color, border_color, border_radius, border_size, font, text_color,
@@ -98,6 +103,7 @@ class Button:
                                           text_color, text)
         self.hover_rect = self.hover_image.get_rect(center=(self.x, self.y))
         self.hover = True
+        self.action = action
 
     def update(self):
         if self.rect.collidepoint(pygame.mouse.get_pos()):
@@ -109,19 +115,34 @@ class Button:
         self.update()
         if self.hover:
             surface.blit(self.hover_image, self.hover_rect)
+            if self.hover and pygame.mouse.get_pressed()[0]:
+                return self.action
         else:
             surface.blit(self.image, self.rect)
+            return
+
+
+def say_hello():
+    print("hello")
 
 
 test_rectangle = Rectangle(100, 100, 100, 75, WHITE)
 test_text = Text(200, 500, "Hello World!", BASIC_FONT, color=GREEN)
-test_button = Button(300, 300, 150, 100, BLACK, WHITE, GRAY, 5, 3, "test 1", BASIC_FONT, GREEN)
+test_button = Button(300, 300, 150, 100, BLACK, WHITE, GRAY, 5, 3, "test 1", BASIC_FONT, GREEN, Actions.TEST)
+
+
+def handle_actions():
+    for action in actions:
+        if action == Actions.TEST:
+            say_hello()
 
 
 def draw_window():
+    actions.clear()
     test_rectangle.draw(win)
     test_text.draw(win)
-    test_button.draw(win)
+    actions.append(test_button.draw(win))
+    handle_actions()
 
 
 def main():
