@@ -90,6 +90,15 @@ class Rectangle(Element):
         super().__init__(x, y, self.image, *groups)
 
 
+class Textbox(Element):
+
+    def __init__(self, x, y, width, height, inner_color, border_color, border_radius, border_size, font, text_color,
+                 text, *groups):
+        self.image = create_textbox(width, height, inner_color, border_color, border_radius, border_size, font,
+                                    text_color, text)
+        super().__init__(x, y, self.image, *groups)
+
+
 class Button:
 
     def __init__(self, x, y, width, height, color, border_color, hover_color, border_size, border_radius, text, font,
@@ -129,6 +138,7 @@ def say_hello():
 test_rectangle = Rectangle(100, 100, 100, 75, WHITE)
 test_text = Text(200, 500, "Hello World!", BASIC_FONT, color=GREEN)
 test_button = Button(300, 300, 150, 100, BLACK, WHITE, GRAY, 5, 3, "test 1", BASIC_FONT, GREEN, Actions.TEST)
+test_textbox = Textbox(400, 600, 150, 100, GRAY, WHITE, 3, 5,  BASIC_FONT, GREEN, "test 1")
 
 
 def handle_actions():
@@ -141,6 +151,7 @@ def draw_window():
     actions.clear()
     test_rectangle.draw(win)
     test_text.draw(win)
+    test_textbox.draw(win)
     actions.append(test_button.draw(win))
     handle_actions()
 
