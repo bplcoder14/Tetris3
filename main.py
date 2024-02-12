@@ -1,5 +1,6 @@
 import pygame
 from pygame.locals import *
+from enum import Enum
 import sys
 
 pygame.init()
@@ -16,6 +17,7 @@ BLUE = (0, 0, 255)
 GREEN = (0, 255, 0)
 RED = (255, 0, 0)
 BLACK = (0, 0, 0)
+GRAY = (125, 125, 125)
 CLEAR = (0, 0, 0, 0)
 
 FPS = 30
@@ -39,10 +41,10 @@ def create_text(text, font, color):
     return surf.convert_alpha()
 
 
-def create_textbox(width, height, inner_color, border_radius, border_color, border_size, font, text_color, text):
+def create_textbox(width, height, inner_color, border_color, border_radius, border_size, font, text_color, text):
     surf = pygame.Surface((width, height))
-    pygame.draw.rect(surf, inner_color, (width - border_size * 2, height - border_size * 2, border_size, border_size))
-    pygame.draw.rect(surf, border_color, (width, height, 0, 0), border_size, border_radius)
+    pygame.draw.rect(surf, inner_color, (border_size, border_size, width - border_size * 2, height - border_size * 2))
+    pygame.draw.rect(surf, border_color, (0, 0, width, height), border_size, border_radius)
     text_surf = create_text(text, font, text_color)
     surf.blit(text_surf, text_surf.get_rect(center=(width / 2, height / 2)))
     return surf.convert_alpha()
@@ -85,17 +87,23 @@ class Rectangle(Element):
 
 class Button:
 
-    def __init__(self, x, y, width, height, text, font, color, *groups):
+    def __init__(self, x, y, width, height, color, border_color, hover_color, border_size, border_radius, text, font,
+                 text_color, *groups):
         self.x = x
         self.y = y
-        self.image = pygame.Surface((width, height))
+        self.image = create_textbox(width, height, color, border_color, border_radius, border_size, font, text_color,
+                                    text)
         self.rect = self.image.get_rect(center=(self.x, self.y))
-        self.hover_image = pygame.Surface((width, height))
+        self.hover_image = create_textbox(width, height, hover_color, border_color, border_radius, border_size, font,
+                                          text_color, text)
         self.hover_rect = self.hover_image.get_rect(center=(self.x, self.y))
-        self.hover = False
+        self.hover = True
 
     def update(self):
-        pass
+        if self.rect.collidepoint(pygame.mouse.get_pos()):
+            self.hover = True
+        else:
+            self.hover = False
 
     def draw(self, surface):
         self.update()
@@ -107,11 +115,13 @@ class Button:
 
 test_rectangle = Rectangle(100, 100, 100, 75, WHITE)
 test_text = Text(200, 500, "Hello World!", BASIC_FONT, color=GREEN)
+test_button = Button(300, 300, 150, 100, BLACK, WHITE, GRAY, 5, 3, "test 1", BASIC_FONT, GREEN)
 
 
 def draw_window():
     test_rectangle.draw(win)
     test_text.draw(win)
+    test_button.draw(win)
 
 
 def main():
