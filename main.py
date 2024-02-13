@@ -127,6 +127,7 @@ class Button:
                                           text_color, text)
         self.hover_rect = self.hover_image.get_rect(center=(self.x, self.y))
         self.hover = True
+        self.did_action = False
         self.action = action
 
     def update(self):
@@ -139,8 +140,14 @@ class Button:
         self.update()
         if self.hover:
             surface.blit(self.hover_image, self.hover_rect)
-            if self.hover and pygame.mouse.get_pressed()[0]:
+            if pygame.mouse.get_pressed()[0] and not self.did_action:
+                self.did_action = True
                 return self.action
+            elif pygame.mouse.get_pressed()[0] and self.did_action:
+                return
+            else:
+                self.did_action = False
+                return
         else:
             surface.blit(self.image, self.rect)
             return
