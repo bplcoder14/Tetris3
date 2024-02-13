@@ -37,6 +37,12 @@ def create_rectangle(width, height, color):
     return surf.convert_alpha()
 
 
+def create_circle(radius, color):
+    surf = pygame.Surface((radius * 2, radius * 2))
+    pygame.draw.circle(surf, color, (radius, radius), radius)
+    return surf.convert_alpha()
+
+
 def create_text(text, font, color):
     surf = pygame.font.Font.render(font, str(text), True, color)
     return surf.convert_alpha()
@@ -74,6 +80,7 @@ class Element(pygame.sprite.Sprite):
     def draw(self, surface):
         self.update_rect()
         surface.blit(self.image, self.rect)
+        return
 
 
 class Text(Element):
@@ -81,6 +88,14 @@ class Text(Element):
     def __init__(self, x, y, text, font, color, *groups):
         self.image = create_text(text, font, color)
         super().__init__(x, y, self.image, *groups)
+
+
+class Circle(Element):
+
+    def __init__(self, x, y, radius, color, *groups):
+        self.image = create_circle(radius, color)
+        super().__init__(x, y, self.image, *groups)
+        self.rect = self.image.get_rect(center=(self.x, self.y))
 
 
 class Rectangle(Element):
@@ -131,6 +146,22 @@ class Button:
             return
 
 
+class Scene:
+
+    def __init__(self, elements=None):
+        self.elements = []
+        self.actions = []
+
+    def add_element(self, element):
+        self.elements.append(element)
+
+    def draw(self, surface):
+        self.actions = []
+        for element in self.elements:
+            self.actions.append(element.draw(surface))
+        return self.actions
+
+
 def say_hello():
     print("hello")
 
@@ -138,8 +169,8 @@ def say_hello():
 test_rectangle = Rectangle(100, 100, 100, 75, WHITE)
 test_text = Text(200, 500, "Hello World!", BASIC_FONT, color=GREEN)
 test_button = Button(300, 300, 150, 100, BLACK, WHITE, GRAY, 5, 3, "test 1", BASIC_FONT, GREEN, Actions.TEST)
-test_textbox = Textbox(400, 600, 150, 100, GRAY, WHITE, 3, 5,  BASIC_FONT, GREEN, "test 1")
-
+test_textbox = Textbox(400, 600, 150, 100, GRAY, WHITE, 3, 5, BASIC_FONT, GREEN, "test 1")
+test_circle = Circle(500, 500, 50, RED)
 
 def handle_actions():
     for action in actions:
@@ -151,6 +182,7 @@ def draw_window():
     actions.clear()
     test_rectangle.draw(win)
     test_text.draw(win)
+    test_circle.draw(win)
     test_textbox.draw(win)
     actions.append(test_button.draw(win))
     handle_actions()
