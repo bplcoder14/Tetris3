@@ -59,6 +59,47 @@ def create_textbox(width, height, inner_color, border_color, border_radius, bord
 
 class Actions(Enum):
     TEST = 0
+    TEST2 = 1
+
+
+class AppScene(Enum):
+    MAIN_MENU = 0
+    PLAY = 1
+
+
+class Mouse:
+
+    def __init__(self):
+        self.x = 0
+        self.y = 0
+        self.left = False
+        self.right = False
+        self.middle = False
+        self.scroll = 0
+        self.scroll_up = False
+        self.scroll_down = False
+        self.held = True
+
+    def update(self):
+        self.x, self.y = pygame.mouse.get_pos()
+        if self.left:
+            self.held = True
+        else:
+            self.held = False
+        self.left, self.middle, self.right = pygame.mouse.get_pressed()
+        self.scroll = pygame.mouse.get_rel()[1]
+        if self.scroll > 0:
+            self.scroll_up = True
+            self.scroll_down = False
+        elif self.scroll < 0:
+            self.scroll_up = False
+            self.scroll_down = True
+        else:
+            self.scroll_up = False
+            self.scroll_down = False
+
+
+mouse = Mouse()
 
 
 class Element(pygame.sprite.Sprite):
@@ -127,7 +168,6 @@ class Button:
                                           text_color, text)
         self.hover_rect = self.hover_image.get_rect(center=(self.x, self.y))
         self.hover = True
-        self.did_action = False
         self.action = action
 
     def update(self):
@@ -140,13 +180,9 @@ class Button:
         self.update()
         if self.hover:
             surface.blit(self.hover_image, self.hover_rect)
-            if pygame.mouse.get_pressed()[0] and not self.did_action:
-                self.did_action = True
+            if pygame.mouse.get_pressed()[0] and not mouse.held:
                 return self.action
-            elif pygame.mouse.get_pressed()[0] and self.did_action:
-                return
             else:
-                self.did_action = False
                 return
         else:
             surface.blit(self.image, self.rect)
@@ -157,21 +193,21 @@ class Scene:
 
     def __init__(self, elements=None):
         self.elements = []
+        if elements is not None:
+            self.elements = elements
         self.actions = []
 
     def add_element(self, element):
         self.elements.append(element)
 
     def draw(self, surface):
-        self.actions = []
+        self.actions.clear()
         for element in self.elements:
             self.actions.append(element.draw(surface))
         return self.actions
 
 
-def say_hello():
-    print("hello")
-
+app_scene = AppScene.MAIN_MENU
 
 test_rectangle = Rectangle(100, 100, 100, 75, WHITE)
 test_text = Text(200, 500, "Hello World!", BASIC_FONT, color=GREEN)
@@ -179,19 +215,36 @@ test_button = Button(300, 300, 150, 100, BLACK, WHITE, GRAY, 5, 3, "test 1", BAS
 test_textbox = Textbox(400, 600, 150, 100, GRAY, WHITE, 3, 5, BASIC_FONT, GREEN, "test 1")
 test_circle = Circle(500, 500, 50, RED)
 
+test_scene = Scene()
+test_scene.add_element(test_rectangle)
+test_scene.add_element(test_text)
+test_scene.add_element(test_button)
+test_scene.add_element(test_textbox)
+test_scene.add_element(test_circle)
+
+main_menu_scene = test_scene
+play_scene = Scene()
+play_scene.add_element(Rectangle(100, 100, 100, 75, WHITE))
+play_scene.add_element(Button(300, 300, 150, 100, BLACK, WHITE, GRAY, 5, 3, "test 1", BASIC_FONT, GREEN, Actions.TEST2))
+
+
 def handle_actions():
+    global app_scene
     for action in actions:
         if action == Actions.TEST:
-            say_hello()
+            print("test")
+            app_scene = AppScene.PLAY
+        elif action == Actions.TEST2:
+            print("test2")
+            app_scene = AppScene.MAIN_MENU
 
 
 def draw_window():
-    actions.clear()
-    test_rectangle.draw(win)
-    test_text.draw(win)
-    test_circle.draw(win)
-    test_textbox.draw(win)
-    actions.append(test_button.draw(win))
+    global actions
+    if app_scene == AppScene.MAIN_MENU:
+        actions = main_menu_scene.draw(win)
+    elif app_scene == AppScene.PLAY:
+        actions = play_scene.draw(win)
     handle_actions()
 
 
@@ -203,6 +256,7 @@ def main():
                 pygame.quit()
                 sys.exit()
         win.fill(BLACK)
+        mouse.update()
         draw_window()
         pygame.display.flip()
 
